@@ -35,7 +35,10 @@ def algorithm():
 
     BestX = (P1.x + P2.x) / 2
     BestY = (P1.y + P2.y) / 2
-
+    M = Point(BestX, BestY)
+    Mx = M.x + (M.x - P3.x)
+    My = M.y + (M.y - P3.y)
+    W = Point(Mx, My)
 
 expression = input("Введите функцию")
 algorithm()
