@@ -29,6 +29,13 @@ def algorithm():
     Point3 = Point(random.randint(1, 10), random.randint(1, 10))
     simplex = Simplex([Point1, Point2, Point3])
     simplex.__sort__()
+    P1 = simplex.points[0]
+    P2 = simplex.points[1]
+    P3 = simplex.points[2]
+
+    BestX = (P1.x + P2.x) / 2
+    BestY = (P1.y + P2.y) / 2
+
 
 expression = input("Введите функцию")
 algorithm()
