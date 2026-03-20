@@ -42,6 +42,9 @@ class Simplex:
                 if Q(self.points[j])> Q(self.points[j+1]):
                     self.points[j], self.points[j+1] = self.points[j+1], self.points[j]
 
+def __repr__(self):
+    return f"({self.x}, {self.y})"
+
 def algorithm():
     Point1 = Point(random.randint(1,10),random.randint(1,10))
     Point2 = Point(random.randint(1, 10), random.randint(1, 10))
