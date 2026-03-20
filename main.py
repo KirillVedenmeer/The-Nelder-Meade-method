@@ -11,7 +11,8 @@ class Point:
     def __init__(self, x, y):
         self.x = x
         self.y = y
-
+    def __repr__(self):
+        return f"({self.x}, {self.y})"
 def reflect(m, p3, alpha=1.0):
     return Point(
         m.x + alpha * (m.x - p3.x),
@@ -73,7 +74,6 @@ def algorithm():
             print("Сделано отражение после проверки растяжения")
         print(simplex.points)
         return
-
     c = contract(m, P3)
     if Q(c) < Q(P3):
         simplex.points[2] = c
