@@ -86,6 +86,6 @@ def algorithm():
 
     print("Нужно глобальное сжатие симплекса, но этот шаг пока не реализован")
     print(simplex.points)
-
+    print("Method")
 expression = input("Введите функцию")
 algorithm()
