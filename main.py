@@ -13,6 +13,7 @@ class Point:
         self.y = y
     def __repr__(self):
         return f"({self.x}, {self.y})"
+    
 def reflect(m, p3, alpha=1.0):
     return Point(
         m.x + alpha * (m.x - p3.x),
@@ -41,6 +42,14 @@ class Simplex:
             for j in range(2):
                 if Q(self.points[j])> Q(self.points[j+1]):
                     self.points[j], self.points[j+1] = self.points[j+1], self.points[j]
+
+    def global_contract(self, delta=0.5):# сжатие всех точек к лучшей     
+        best = self.points[0]
+        for i in range(1, len(self.points)):
+            self.points[i] = Point(
+                best.x + delta * (self.points[i].x - best.x),
+                best.y + delta * (self.points[i].y - best.y)
+            )
 
 def __repr__(self):
     return f"({self.x}, {self.y})"
@@ -83,8 +92,7 @@ def algorithm():
         print("Сделано сжатие")
         print(simplex.points)
         return
-
-    print("Нужно глобальное сжатие симплекса, но этот шаг пока не реализован")
+    
     print(simplex.points)
     print("Method")
 expression = input("Введите функцию")
