@@ -130,7 +130,8 @@ class NelderMeadApp:
             iterations = [s.iteration for s in self._history]
             best = [s.best_f for s in self._history]
             worst = [s.worst_f for s in self._history]
-            self._plot_manager.draw_convergence(iterations, best, worst)
+            simplexes = [state.simplex_points for state in self._history]
+            self._plot_manager.draw_convergence(iterations, best, worst, simplexes)
 
         if self._is_running or self._history:
             self.root.after(50, self._update_loop)
