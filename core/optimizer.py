@@ -32,11 +32,11 @@ class NelderMeadOptimizer:
 
             if callback:
                 state = IterationState(
-                    iteration=iteration,
-                    best_f=simplex.best.value,
-                    worst_f=simplex.worst.value,
-                    operation=self._last_op
-                )
+                iteration=iteration,
+                best_f=simplex.best.value,
+                worst_f=simplex.worst.value,
+                operation=self._last_op,
+                simplex_points=np.array([v.point.copy() for v in simplex._vertices]) )
                 if not callback(state):
                     break
 

@@ -1,9 +1,9 @@
-"""View: Управление графиками (единственная ответственность — отрисовка)."""
+"""View: Управление графиками."""
+
 import numpy as np
-import matplotlib.pyplot as plt
+import tkinter as tk
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 from matplotlib.figure import Figure
-import tkinter as tk
 
 
 class PlotManager:
@@ -11,49 +11,106 @@ class PlotManager:
 
     def __init__(self, parent: tk.Widget, figsize: tuple = (7, 6)):
         self.fig = Figure(figsize=figsize, dpi=100)
+
         self.ax1 = self.fig.add_subplot(211)
         self.ax2 = self.fig.add_subplot(212)
 
         self.canvas = FigureCanvasTkAgg(self.fig, master=parent)
-        self.canvas.get_tk_widget().pack(fill='both', expand=True)
+        self.canvas.get_tk_widget().pack(fill="both", expand=True)
 
-    # ui/plot_manager.py
-    def draw_convergence(self, iterations: list, best_values: list, worst_values: list) -> None:
-        """Отрисовка сходимости с автоматическим выбором шкалы."""
+    def draw_convergence(
+        self,
+        iterations: list,
+        best_values: list,
+        worst_values: list,
+        simplex_history=None
+    ) -> None:
+        """Верхний график: точки симплекса. Нижний график: разброс."""
+
         self.ax1.clear()
+        self.ax2.clear()
 
         if not iterations:
+            self.canvas.draw()
             return
 
-        # Проверяем, можно ли использовать логарифмическую шкалу
-        has_negative = any(v <= 0 for v in best_values + worst_values)
-
-        if has_negative:
-            # Линейная шкала для функций с отрицательными значениями
-            self.ax1.plot(iterations, best_values, 'b-', linewidth=2, label='Лучшая')
-            self.ax1.plot(iterations, worst_values, 'r--', linewidth=1, label='Худшая')
+        if simplex_history:
+            self.draw_simplex_path(simplex_history)
         else:
-            # Логарифмическая шкала для строго положительных функций (напр. x² + y²)
-            self.ax1.semilogy(iterations, best_values, 'b-', linewidth=2, label='Лучшая')
-            self.ax1.semilogy(iterations, worst_values, 'r--', linewidth=1, label='Худшая')
+            self.ax1.text(
+                0.5,
+                0.5,
+                "Нет данных о точках симплекса",
+                ha="center",
+                va="center",
+                transform=self.ax1.transAxes
+            )
+            self.ax1.set_title("Изменение точек симплекса")
 
-        self.ax1.set_title("Сходимость")
-        self.ax1.set_ylabel("f(x)")
-        self.ax1.legend()
-        self.ax1.grid(True, alpha=0.3)
-
-        # Разброс значений
-        if best_values and worst_values:
-            spread = [w - b for b, w in zip(best_values, worst_values)]
-            self.ax2.clear()
-            self.ax2.plot(iterations, spread, 'g-', linewidth=1.5)
-            self.ax2.set_title("Разброс в симплексе")
-            self.ax2.set_xlabel("Итерация")
-            self.ax2.set_ylabel("fh - fl")
-            self.ax2.grid(True, alpha=0.3)
+        self.draw_spread(iterations, best_values, worst_values)
 
         self.fig.tight_layout()
         self.canvas.draw()
+
+    def draw_simplex_path(self, simplex_history: list) -> None:
+        """Рисует изменение симплекса по шагам на верхнем графике."""
+
+        self.ax1.clear()
+
+        first_simplex = np.asarray(simplex_history[0])
+
+        if first_simplex.ndim != 2 or first_simplex.shape[1] != 2:
+            self.ax1.text(
+                0.5,
+                0.5,
+                "График симплекса доступен только для функции двух переменных",
+                ha="center",
+                va="center",
+                transform=self.ax1.transAxes
+            )
+            self.ax1.set_title("Изменение точек симплекса")
+            return
+
+        step = max(1, len(simplex_history) // 25)
+
+        for i, simplex in enumerate(simplex_history):
+            simplex = np.asarray(simplex)
+
+            if i % step != 0 and i != len(simplex_history) - 1:
+                continue
+
+            points = np.vstack([simplex, simplex[0]])
+
+            self.ax1.plot(
+                points[:, 0],
+                points[:, 1],
+                marker="o",
+                linewidth=1,
+                alpha=0.5)
+
+            center = simplex.mean(axis=0)
+            self.ax1.text(center[0], center[1], str(i), fontsize=7)
+
+        self.ax1.set_title("Изменение точек симплекса по шагам")
+        self.ax1.set_xlabel("x₁")
+        self.ax1.set_ylabel("x₂")
+        self.ax1.grid(True, alpha=0.3)
+
+    def draw_spread(
+        self,
+        iterations: list,
+        best_values: list,
+        worst_values: list
+    ) -> None:
+        """Рисует разброс значений в симплексе на нижнем графике."""
+
+        spread = [w - b for b, w in zip(best_values, worst_values)]
+
+        self.ax2.plot(iterations, spread, "g-", linewidth=1.5)
+        self.ax2.set_title("Разброс в симплексе")
+        self.ax2.set_xlabel("Итерация")
+        self.ax2.set_ylabel("fh - fl")
+        self.ax2.grid(True, alpha=0.3)
 
     def clear(self) -> None:
         self.ax1.clear()
