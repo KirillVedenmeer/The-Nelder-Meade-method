@@ -34,8 +34,8 @@ class OptimizationResult:
 
 @dataclass
 class IterationState:
-    """Состояние на одной итерации (для UI)."""
     iteration: int
     best_f: float
     worst_f: float
     operation: str
+    simplex_points: np.ndarray
