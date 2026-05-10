@@ -23,9 +23,10 @@ class PlotManager:
         iterations: list,
         best_values: list,
         worst_values: list,
-        simplex_history=None
+        simplex_history=None,
+        function=None
     ) -> None:
-        """Верхний график: точки симплекса. Нижний график: разброс."""
+        """Верхний график: линии уровня + точки симплекса. Нижний график: разброс."""
 
         self.ax1.clear()
         self.ax2.clear()
@@ -35,7 +36,7 @@ class PlotManager:
             return
 
         if simplex_history:
-            self.draw_simplex_path(simplex_history)
+            self.draw_simplex_path(simplex_history, function=function)
         else:
             self.ax1.text(
                 0.5,
@@ -52,8 +53,8 @@ class PlotManager:
         self.fig.tight_layout()
         self.canvas.draw()
 
-    def draw_simplex_path(self, simplex_history: list) -> None:
-        """Рисует изменение симплекса по шагам на верхнем графике."""
+    def draw_simplex_path(self, simplex_history: list, function=None) -> None:
+        """Рисует линии уровня функции и изменение симплекса по шагам."""
 
         self.ax1.clear()
 
@@ -71,6 +72,38 @@ class PlotManager:
             self.ax1.set_title("Изменение точек симплекса")
             return
 
+        all_points = np.vstack([np.asarray(simplex) for simplex in simplex_history])
+
+        x_min = all_points[:, 0].min() - 0.5
+        x_max = all_points[:, 0].max() + 0.5
+        y_min = all_points[:, 1].min() - 0.5
+        y_max = all_points[:, 1].max() + 0.5
+
+        # Линии уровня функции
+        if function is not None:
+            x = np.linspace(x_min, x_max, 250)
+            y = np.linspace(y_min, y_max, 250)
+            X, Y = np.meshgrid(x, y)
+
+            Z = np.zeros_like(X)
+
+            for i in range(X.shape[0]):
+                for j in range(X.shape[1]):
+                    try:
+                        Z[i, j] = function([X[i, j], Y[i, j]])
+                    except Exception:
+                        Z[i, j] = np.nan
+
+            contour = self.ax1.contour(
+                X,
+                Y,
+                Z,
+                levels=20,
+                linewidths=0.8,
+                alpha=0.7
+            )
+            self.ax1.clabel(contour, inline=True, fontsize=7)
+
         step = max(1, len(simplex_history) // 25)
 
         for i, simplex in enumerate(simplex_history):
@@ -86,7 +119,8 @@ class PlotManager:
                 points[:, 1],
                 marker="o",
                 linewidth=1,
-                alpha=0.5)
+                alpha=0.65
+            )
 
             center = simplex.mean(axis=0)
             self.ax1.text(center[0], center[1], str(i), fontsize=7)
